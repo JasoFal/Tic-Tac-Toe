@@ -1,4 +1,6 @@
-import { useState } from "react";
+import reducer from "../reducers/tic_tac_toe_reducer";
+import { connect } from 'react-redux';
+import React from "react";
 
 function Square({ value, onSquareClick }) {
   return (
@@ -52,47 +54,70 @@ function Board({ xIsNext, squares, onPlay }) {
   );
 }
 
-export default function Game() {
-  const [history, setHistory] = useState([Array(9).fill(null)]);
-  const [currentMove, setCurrentMove] = useState(0);
-  const xIsNext = currentMove % 2 === 0;
-  const currentSquares = history[currentMove];
-
-  function handlePlay(nextSquares) {
-    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
-    setHistory(nextHistory);
-    setCurrentMove(nextHistory.length - 1);
+class Game extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      currentMove: 0,
+      xIsNext: true,
+      currentSquares: Array(9).fill(null),
+      history: []
+    };
   }
 
-  function jumpTo(nextMove) {
-    setCurrentMove(nextMove);
+  handlePlay = (nextSquares) => {
+    const nextHistory = [...this.state.history.slice(0, this.state.currentMove + 1), nextSquares];
+    this.setState({
+      currentMove: nextHistory.length - 1,
+      history: nextHistory,
+      currentSquares: nextSquares,
+      xIsNext: !this.state.xIsNext
+    });
   }
 
-  const moves = history.map((squares, move) => {
-    let description;
-    if (move > 0) {
-      description = "Go to move #" + move;
-    } else {
-      description = "Go to game start";
-    }
+  jumpTo(nextMove) {
+    this.setState({
+      currentMove: nextMove,
+      currentSquares: this.state.history[nextMove]
+    });
+  }
+
+  render() {
+    const moves = this.state.history.map((squares, move) => {
+      let description;
+      if (move > 0) {
+        description = "Go to move #" + move;
+      } else {
+        description = "Go to game start";
+      }
+      return (
+        <li key={move}>
+          <button onClick={() => this.jumpTo(move)}>{description}</button>
+        </li>
+      );
+    });
+
     return (
-      <li key={move}>
-        <button onClick={() => jumpTo(move)}>{description}</button>
-      </li>
+      <div className="game">
+        <div className="game-board">
+          <Board xIsNext={this.state.xIsNext} squares={this.state.currentSquares} onPlay={this.handlePlay} />
+        </div>
+        <div className="game-info">
+          <ol>{moves}</ol>
+        </div>
+      </div>
     );
-  });
-
-  return (
-    <div className="game">
-      <div className="game-board">
-        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
-      </div>
-      <div className="game-info">
-        <ol>{moves}</ol>
-      </div>
-    </div>
-  );
+  };
 }
+
+// const mapStateToProps = state => {
+//   return {
+//     history: state
+//   }
+// }
+
+// Game = connect(mapStateToProps)(Game)
+export default Game;
 
 function calculateWinner(squares) {
   const lines = [
@@ -103,7 +128,7 @@ function calculateWinner(squares) {
     [1, 4, 7],
     [2, 5, 8],
     [0, 4, 8],
-    [2, 4 ,6]
+    [2, 4, 6]
   ];
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
