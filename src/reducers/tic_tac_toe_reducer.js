@@ -1,12 +1,9 @@
 const reducer = (state = {}, action) => {
-  const {history, id} = action;
+  const {history} = action;
   switch (action.type) {
-    case "ADD_HISTORY":
+    case "GAME":
       return Object.assign({}, state, {
-        [id]: {
-          history: history,
-          id: id
-        }
+        history: history
       });
     default:
       return state;
