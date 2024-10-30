@@ -43,6 +43,11 @@ describe("ticTacToeReducer", () => {
       type: "TIME_TRAVEL",
       currentMove: currentMove,
       currentSquares: currentSquares
-    }
+    };
+
+    expect(gameReducer({}, action)).toEqual({
+      currentMove: currentMove,
+      currentSquares: currentSquares
+    })
   });
 });
